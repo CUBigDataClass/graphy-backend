@@ -2,3 +2,7 @@
 */.idea
 .DS_Store
 env
+*.iml
+*.yaml
+twitter_public_api_key.py
+tweets_news_events/
