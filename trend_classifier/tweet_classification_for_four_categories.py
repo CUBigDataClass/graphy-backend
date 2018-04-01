@@ -1,6 +1,11 @@
 import os
+from glob import glob
+import json
+import re
+
 # make sure pyspark tells workers to use python3 not 2 if both are installed
 os.environ['PYSPARK_PYTHON'] = '/Library/Frameworks/Python.framework/Versions/3.6/bin/python3.6'
+
 from pyspark.sql import *
 from pyspark import SparkContext
 import string
@@ -16,35 +21,52 @@ from pyspark.ml.feature import HashingTF, IDF
 
 # Extract actual necessary words from the tweet
 def extract_words(tweet_words):
-	words = []
-	alpha_lower = string.ascii_lowercase
-	alpha_upper = string.ascii_uppercase
-	numbers = [str(n) for n in range(10)]
-	for word in tweet_words:
-		cur_word = ''
-		for c in word:
-			if (c not in alpha_lower) and (c not in alpha_upper) and (c not in numbers):
-				if len(cur_word) >= 2:
-					words.append(cur_word.lower())
-				cur_word = ''
-				continue
-			cur_word += c
-		if len(cur_word) >= 2:
-			words.append(cur_word.lower())
-	return ' '.join(words)
+    words = []
+    alpha_lower = string.ascii_lowercase
+    alpha_upper = string.ascii_uppercase
+    numbers = [str(n) for n in range(10)]
+    for word in tweet_words:
+        cur_word = ''
+        for c in word:
+            if (c not in alpha_lower) and (c not in alpha_upper) and (c not in numbers):
+                if len(cur_word) >= 2:
+                    words.append(cur_word.lower())
+                cur_word = ''
+                continue
+            cur_word += c
+        if len(cur_word) >= 2:
+            words.append(cur_word.lower())
+    words_with_url = ' '.join(words)
+    url_less_words = re.sub(r'(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:\'".,<>?«»“”‘’]))','', words_with_url)
+    return url_less_words
+
 
 def get_training_data():
-    f = open('twitter-topic-classifier-master//training.txt', 'r', encoding='utf-8')
+    f_s_p = open('twitter-topic-classifier-master//training.txt', 'r', encoding='utf-8')
+
     training_data = []
-    for l in f.readlines():
+    for l in f_s_p.readlines():
         l = l.strip()
         tweet_details = l.split()
         tweet_id = tweet_details[0]
         tweet_label = tweet_details[1]
+        # print(tweet_details[2:])
         tweet_words = extract_words(tweet_details[2:])
         training_data.append([tweet_id, tweet_label, tweet_words])
 
-    f.close()
+    for f_name in glob('tweets_news_events/*.json'):
+        # print(f_name)
+        with open(f_name) as json_data:
+            d = json.load(json_data)
+            l=f_name.split('/')[1]
+            tweet_id=l.split('_')[1].split('.')[0]
+            tweet_label=l.split('_')[0]
+            # print(d['text'].strip())
+            tweet_words = extract_words(d['text'].strip().split())
+            # print(tweet_words)
+            training_data.append([tweet_id, tweet_label, tweet_words])
+
+    f_s_p.close()
 
     return training_data
 
@@ -107,7 +129,7 @@ predictions = lrModel.transform(testData)
 predictions.filter(predictions['prediction'] == 0) \
     .select("tweet_words","tweet_label","probability","label","prediction") \
     .orderBy("probability", ascending=False) \
-    .show(n = 10, truncate = 30)
+    .show(n = 20, truncate = 30)
 
 evaluator = MulticlassClassificationEvaluator(predictionCol="prediction")
 print(evaluator.evaluate(predictions))
