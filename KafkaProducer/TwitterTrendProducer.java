@@ -2,11 +2,24 @@ package com.graphy.kafka;
 
 import twitter4j.*;
 import twitter4j.auth.AccessToken;
+import kafka.javaapi.producer.Producer;
+import kafka.producer.KeyedMessage;
+import kafka.producer.ProducerConfig;
+
+import java.util.Properties;
 
 public class TwitterTrendProducer extends Thread{
 
 
     public Trends read() throws Exception {
+
+        Properties props = new Properties();
+        props.put("zk.connect","localhost:2181");
+        props.put("serializer.class","kafka.serializer.StringEncoder");
+        props.put("metadata.broker.list","localhost:9092");
+        ProducerConfig config = new ProducerConfig(props);
+        Producer producer = new Producer(config);
+
         AccessToken accessToken = new AccessToken("3161321025-FajWBXoXT4PAZGNyta38w4krEsK8fp2d5opwdN4", "p2BPY6BzUKyQJRmIMDUvAwPXjBCksRTBI12sYi5xdkvrC");
         Twitter twitter = new TwitterFactory().getInstance();
         twitter.setOAuthConsumer("5VS16zsltlmES0keEq860Xkut", "m6MFR7FTxn2ON3NrMFALD48DFy8ngVxO1KXfE8g1qhaergxpp2");
@@ -26,7 +39,10 @@ public class TwitterTrendProducer extends Thread{
         for (int j = 0; j < 468; j++){
             Trends trends = twitter.getPlaceTrends(array[j]);
             for (int i = 0; i < trends.getTrends().length; i++) {
-                System.out.println(trends.getTrends()[i].getName());
+                String msg = trends.getTrends()[i].getName();
+                producer.send(new KeyedMessage("demo",msg));
+
+                System.out.println(msg);
                 System.out.println("Current location number out of 467 = "+j);
                 System.out.println("Total number of trends extracted till now = "+countTrends);
                 countTrends++;
