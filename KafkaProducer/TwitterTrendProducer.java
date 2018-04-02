@@ -3,7 +3,7 @@ package com.graphy.kafka;
 import twitter4j.*;
 import twitter4j.auth.AccessToken;
 
-public class TwitterTrendProducer {
+public class TwitterTrendProducer extends Thread{
 
 
     public Trends read() throws Exception {
@@ -30,6 +30,8 @@ public class TwitterTrendProducer {
                 System.out.println("Current location number out of 467 = "+j);
                 System.out.println("Total number of trends extracted till now = "+countTrends);
                 countTrends++;
+                if (countTrends%1000==0)
+                    Thread.sleep(120000);// Sleep for 2 minutes after extracting every 1000 trends
         }
     }
         System.out.println("Total number of locations = "+countWoeid);
