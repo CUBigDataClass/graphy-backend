@@ -31,7 +31,7 @@ public class TwitterTrendProducer extends Thread{
                 System.out.println("Total number of trends extracted till now = "+countTrends);
                 countTrends++;
                 if (countTrends%1000==0)
-                    Thread.sleep(120000);// Sleep for 2 minutes after extracting every 1000 trends
+                    Thread.sleep(900000);// Sleep for 15 minutes after extracting every 1000 trends
         }
     }
         System.out.println("Total number of locations = "+countWoeid);
