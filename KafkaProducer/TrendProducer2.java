@@ -1,5 +1,6 @@
 package com.graphy.kafka;
 
+/* This is just the base code for the Kafka Producer */
 
 import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;

@@ -53,12 +53,14 @@ def _ids_to_tweets_downloader(ids, api, folder, id_classification_lookup):
     tweets = api.statuses_lookup(ids)
 
     for i, tweet in enumerate(tweets):
+
         tweet_dict = tweet._json
         # tweet_dict = json.loads(tweet_str)
         id = tweet_dict['id_str']
-        with open(os.path.join(folder, id_classification_lookup[id] +\
-                                       '_' + id + '.json'), 'w') as outfile:
-            json.dump(tweet_dict, outfile)
+        with open(os.path.join(folder, id_classification_lookup[ids[i]] +\
+                                       '_' + ids[i] + '.json'), 'w') as outfile:
+            json.dump(tweet._json, outfile)
+
 
 
 if __name__ == "__main__":
