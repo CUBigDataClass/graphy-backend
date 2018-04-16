@@ -6,7 +6,14 @@ import com.datastax.driver.core.Session;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+/*
+The following CQL statement creates the necessary table that stores trends from the Kafka Queue with topic name "demo" for now.
 
+CREATE TABLE graphy.trend(
+   trend_id UUID PRIMARY KEY,
+   trend_name text
+   );
+*/
 import java.util.Arrays;
 import java.util.Properties;
 public class TrendConsumerCassandra {
