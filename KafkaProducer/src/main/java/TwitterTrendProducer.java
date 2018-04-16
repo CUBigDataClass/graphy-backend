@@ -17,8 +17,7 @@ import java.util.Properties;
 
 public class TwitterTrendProducer extends Thread {
     private final static String TOPIC = "new_trends";
-    private final static String BOOTSTRAP_SERVERS =
-            "localhost:9092,localhost:9093,localhost:9094";
+    private final static String BOOTSTRAP_SERVERS =  System.getenv("KAFKA_SERVERS") == null ?  "localhost:9092,localhost:9093,localhost:9094" : System.getenv("KAFKA_SERVERS");
 
     private static Producer<Integer, String> createProducer() {
         Properties props = new Properties();
