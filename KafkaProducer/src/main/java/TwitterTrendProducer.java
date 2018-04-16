@@ -36,7 +36,7 @@ public class TwitterTrendProducer extends Thread {
     public Trends read() throws Exception {
 
         AccessToken accessToken = new AccessToken("3161321025-FajWBXoXT4PAZGNyta38w4krEsK8fp2d5opwdN4",
-                "p2BPY6BzUKyQJRmIMDUvAwPXjBCksRTBI12sYi5xdkvrC");
+"p2BPY6BzUKyQJRmIMDUvAwPXjBCksRTBI12sYi5xdkvrC");
         Twitter twitter = new TwitterFactory().getInstance();
         twitter.setOAuthConsumer("5VS16zsltlmES0keEq860Xkut", "m6MFR7FTxn2ON3NrMFALD48DFy8ngVxO1KXfE8g1qhaergxpp2");
         twitter.setOAuthAccessToken(accessToken);
