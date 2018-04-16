@@ -5,9 +5,12 @@ push: push-server
 
 
 TAG = 1.0.1
-PROJECT_NAME = tw_puller
+PROJECT_NAME = trend_puller
 
-build-server:
+target/trend-puller-1.0-SNAPSHOT-jar-with-dependencies.jar: src/main/java/TwitterTrendProducer.java
+	mvn package
+
+build-server: target/trend-puller-1.0-SNAPSHOT-jar-with-dependencies.jar
 	docker build -t graphy/$(PROJECT_NAME) .
 	docker tag graphy/$(PROJECT_NAME) graphy/$(PROJECT_NAME):$(TAG)
 
