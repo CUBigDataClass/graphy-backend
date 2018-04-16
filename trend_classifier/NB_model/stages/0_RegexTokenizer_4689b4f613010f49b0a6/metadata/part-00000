@@ -1,0 +1,1 @@
+{"class":"org.apache.spark.ml.feature.RegexTokenizer","timestamp":1523849614054,"sparkVersion":"2.3.0","uid":"RegexTokenizer_4689b4f613010f49b0a6","paramMap":{"outputCol":"words","toLowercase":true,"pattern":"\\W","gaps":true,"minTokenLength":1,"inputCol":"text_words"}}
