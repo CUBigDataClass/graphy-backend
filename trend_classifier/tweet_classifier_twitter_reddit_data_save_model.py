@@ -23,6 +23,7 @@ from pyspark.ml.feature import HashingTF, IDF
 ## Extract actual necessary words from the tweet/reddit post (little pre-processing done here)
 def extract_words(text_words):
     words = []
+    # print(text_words)
     alpha_lower = string.ascii_lowercase
     alpha_upper = string.ascii_uppercase
     numbers = [str(n) for n in range(10)]
@@ -119,30 +120,34 @@ print(add_stopwords)
 stopwordsRemover = StopWordsRemover(inputCol="words", outputCol="filtered").setStopWords(add_stopwords)
 
 ## bag of words count
-countVectors = CountVectorizer(inputCol="filtered", outputCol="features", binary=True, vocabSize=15000, minDF=1)
-
-
-label_stringIdx = StringIndexer(inputCol = "text_label", outputCol = "label")
-# pipeline = Pipeline(stages=[regexTokenizer, stopwordsRemover, countVectors, label_stringIdx])
-
-## creating the Naive Bayes classification model
-lr =  NaiveBayes(smoothing=1.0, modelType = "multinomial")
+countVectors = CountVectorizer(inputCol="filtered", outputCol="features", binary=True, vocabSize=12000, minDF=1)
 
 ## creating the pipeline
-pipeline = Pipeline(stages=[regexTokenizer, stopwordsRemover,countVectors, label_stringIdx]+[lr])
+label_stringIdx = StringIndexer(inputCol = "text_label", outputCol = "label")
+pipeline = Pipeline(stages=[regexTokenizer, stopwordsRemover, countVectors, label_stringIdx])
 
-trainingData=data
+## creating the Naive Bayes classification model
+# lr =  NaiveBayes(smoothing=1.0, modelType = "multinomial")
+
+## creating the pipeline
+# pipeline = Pipeline(stages=[regexTokenizer, stopwordsRemover,countVectors, label_stringIdx]+[lr])
+
 # Fit the pipeline to training documents.
-# pipelineFit = pipeline.fit(data)
-# dataset = pipelineFit.transform(data)
-# dataset.show(5)
+pipelineFit = pipeline.fit(data)
+dataset = pipelineFit.transform(data)
+
+trainingData=dataset
+dataset.show(5)
 #
 # # set seed for reproducibility
 # (trainingData, testData) = dataset.randomSplit([0.9, 0.1], seed = 100)
 # print("Training Dataset Count: " + str(trainingData.count()))
 # print("Test Dataset Count: " + str(testData.count()))
 
-# lr =  NaiveBayes(smoothing=1.0, modelType = "multinomial")
+## creating the Naive Bayes classification model
+lr =  NaiveBayes(smoothing=1.0, modelType = "multinomial",featuresCol="features",labelCol="label")
+lrModel=lr.fit(trainingData)
+
 # predictions = lrModel.transform(testData)
 #
 # predictions.filter(predictions['prediction'] == 0) \
@@ -154,7 +159,8 @@ trainingData=data
 # print(evaluator.evaluate(predictions))
 
 ## Fit the pipeline to training documents.
-lrModel=pipeline.fit(trainingData)
-## Save the pipeline
-lrModel.save("NB_model")
+# lrModel=pipeline.fit(trainingData)
+
+## Save the model
+lrModel.write().overwrite().save("NB_model_without_pipeline")
 
