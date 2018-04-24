@@ -67,7 +67,8 @@ def _store_tweet(tweet, trend):
     logging.debug('Output dict %s' % out)
     out_json = json.dumps(out, skipkeys=True)
     logging.debug('Output json %s' % out_json)
-    session.execute(prep_query, [out_json, ])
+    if out['location']:
+        session.execute(prep_query, [out_json, ])
 
 
 def _download_tweets(trend):
