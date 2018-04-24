@@ -1,4 +1,4 @@
-FROM python:2.7-alpine
+FROM python:3.5-alpine
 
 ADD requirements.txt /
 RUN pip install -r requirements.txt

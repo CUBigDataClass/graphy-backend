@@ -21,6 +21,7 @@ public class TwitterTrendProducer extends Thread {
 
     private static Producer<Integer, String> createProducer() {
         Properties props = new Properties();
+        System.out.println("Server connected: " + BOOTSTRAP_SERVERS);
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
                                             BOOTSTRAP_SERVERS);
         props.put(ProducerConfig.CLIENT_ID_CONFIG, "KafkaExampleProducer");
