@@ -120,7 +120,7 @@ print(add_stopwords)
 stopwordsRemover = StopWordsRemover(inputCol="words", outputCol="filtered").setStopWords(add_stopwords)
 
 ## bag of words count
-countVectors = CountVectorizer(inputCol="filtered", outputCol="features", binary=True, vocabSize=12000, minDF=1)
+countVectors = CountVectorizer(inputCol="filtered", outputCol="features", binary=True, vocabSize=10000, minDF=1)
 
 ## creating the pipeline
 label_stringIdx = StringIndexer(inputCol = "text_label", outputCol = "label")
