@@ -5,7 +5,7 @@ push: push-server
 
 
 TAG = 1.0.3
-PROJECT_NAME = tw_puller
+PROJECT_NAME = tweets_api
 
 build-server:
 	docker build -t graphy/$(PROJECT_NAME) .

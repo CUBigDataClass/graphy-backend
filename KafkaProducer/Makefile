@@ -4,7 +4,7 @@ push: push-server
 .PHONY: push build
 
 
-TAG = 1.0.1
+TAG = 1.0.2
 PROJECT_NAME = trend_puller
 
 target/trend-puller-1.0-SNAPSHOT-jar-with-dependencies.jar: src/main/java/TwitterTrendProducer.java
