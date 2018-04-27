@@ -4,7 +4,7 @@ push: push-server
 .PHONY: push build
 
 
-TAG = 1.0.13
+TAG = 1.0.15
 PROJECT_NAME = tweet_classifier
 
 build-server:

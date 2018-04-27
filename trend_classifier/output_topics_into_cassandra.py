@@ -31,7 +31,7 @@ spark = SparkSession.builder \
   .config('spark.cassandra.output.consistency.level','ONE') \
   .master(SPARK_MASTER) \
   .getOrCreate()
-
+  
 
 sqlContext = SQLContext(spark)
 
@@ -87,6 +87,8 @@ regexTokenizer = RegexTokenizer(inputCol="text_words", outputCol="words", patter
 
 ## stop words
 f=open("./stopwords_twitter.txt","r")
+model = NaiveBayesModel.load('./NB_model_without_pipeline')
+
 add_stopwords =[]
 for l in f.readlines():
     add_stopwords.append(l.strip())
@@ -114,9 +116,6 @@ pipelineFit = pipeline.fit(df)
 dataset = pipelineFit.transform(df)
 # dataset.show(5)
 # dataset.count()
-
-model = NaiveBayesModel.load('./NB_model_without_pipeline')
-print(model)
 
 predictions = model.transform(dataset)
 
