@@ -17,6 +17,7 @@ from sklearn.metrics import precision_recall_fscore_support as score
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, classification_report, confusion_matrix
 import pickle
 from sklearn.externals import joblib
+from sklearn.feature_extraction.text import TfidfTransformer
 
 ## Extract actual necessary words from the tweet/reddit post (little pre-processing done here)
 def extract_words(text_words):
@@ -81,8 +82,8 @@ def get_training_data():
         reddit_details = l.split()
         reddit_label = reddit_details[0].lower()
         reddit_words = extract_words(reddit_details[1:])
-
-        training_data.append([reddit_label, reddit_words])
+        if reddit_label!='health':
+            training_data.append([reddit_label, reddit_words])
 
     f_red.close()
     random.shuffle(training_data)
@@ -98,19 +99,22 @@ df.columns = ['text_label','text_words']
 X=df['text_words'].values
 y=df['text_label'].values
 
+print(np.unique(y))
 print(type(X))
 print(X[:10])
 print(y[:10])
-
-## split X and y numpy arrays to train & test
-# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-# print (X_train.shape, y_train.shape)
-# print (X_test.shape, y_test.shape)
 
 ## encoding text labels
 le = preprocessing.LabelEncoder()
 Y = le.fit_transform(y)
 print(Y.shape)
+
+## split X and y numpy arrays to train & test
+# X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2)
+# print (X_train.shape, y_train.shape)
+# print (X_test.shape, y_test.shape)
+
+
 ## stop words
 f=open("stopwords_twitter.txt","r")
 add_stopwords =[]
@@ -122,17 +126,16 @@ stopwords = text.ENGLISH_STOP_WORDS.union(add_stopwords)
 
 ##Creating pipeline with countvectorizer and classifier
 classifier = Pipeline([
-    ('vectorizer', CountVectorizer(ngram_range=(1,2),stop_words=stopwords,min_df=1,max_df=10000,binary=True)),
+    ('vectorizer', CountVectorizer(ngram_range=(1,2),stop_words=stopwords,min_df=1,binary=True)),
     ('clf', MultinomialNB(alpha=1.0))])
 
 classifier.fit(X, Y)
 # predicted = classifier.predict(X_test)
 # all_labels = le.inverse_transform(predicted)
-# y_test_labels=le.fit_transform(y_test)
 #
-# print(accuracy_score(y_test_labels, predicted))
-# print(precision_score(y_test_labels, predicted, average="macro"))
-# print(recall_score(y_test_labels, predicted, average="macro"))
+# print(accuracy_score(y_test, predicted))
+# print(precision_score(y_test, predicted, average="macro"))
+# print(recall_score(y_test, predicted, average="macro"))
 
 joblib.dump(classifier, 'topic_classifier_sklearn.pkl')
 
