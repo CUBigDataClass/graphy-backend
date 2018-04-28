@@ -4,7 +4,7 @@ push: push-server
 .PHONY: push build
 
 
-TAG = 1.0.3
+TAG = 1.0.7
 PROJECT_NAME = tw_puller
 
 build-server:
