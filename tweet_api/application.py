@@ -2,6 +2,8 @@ import json
 import logging
 import random
 from collections import Counter, defaultdict
+from trend_similarity import get_tweets_per_trend, \
+    make_graph, vectorize_docs
 import socket
 
 
@@ -95,7 +97,6 @@ def show_all_markers():
     trend_classification = {}
 
 
-
     for i in rows:
         raw_json = json.loads(i.json)
 
@@ -115,6 +116,16 @@ def show_all_markers():
                                 'trend_classification' : trend_classification}),
                     mimetype='application/json')
 
+@app.route('/trend_graph', methods=['GET'])
+def get_trend_graph():
+    trend_doc = get_tweets_per_trend(n_trends=100)
+
+    result = vectorize_docs(trend_doc)
+
+    graph = make_graph(result)
+
+    return Response(json.dumps(graph),
+                    mimetype='application/json')
 
 @app.route('/color', methods=['POST'])
 def show_color():
