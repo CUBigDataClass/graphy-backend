@@ -4,8 +4,8 @@ push: push-server
 .PHONY: push build
 
 
-TAG = 1.0.7
-PROJECT_NAME = tw_puller
+TAG = 1.0.0
+PROJECT_NAME = realtime_classifier
 
 build-server:
 	docker build -t graphy/$(PROJECT_NAME) .
