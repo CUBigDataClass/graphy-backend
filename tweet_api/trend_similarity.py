@@ -74,10 +74,12 @@ def make_graph(result):
 
     for trend in trends:
         for each_edge in result[trend]:
-            edge = {"source":trend_index[trend],
-                    "target":trend_index[each_edge[0]],
-                    "value":each_edge[1]+1}
-            graph["links"].append(edge.copy())
+            distance = 2 - each_edge[1]
+            if distance < 2:
+                edge = {"source":trend_index[trend],
+                        "target":trend_index[each_edge[0]],
+                        "value":3**distance}
+                graph["links"].append(edge.copy())
 
     return graph
 

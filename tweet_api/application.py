@@ -5,12 +5,9 @@ from collections import Counter, defaultdict
 from trend_similarity import get_tweets_per_trend, \
     make_graph, vectorize_docs
 import socket
-
-
 from flask_cors import CORS
 from flask import Flask, render_template, request, url_for, Response
 from multiprocessing.dummy import Pool as ThreadPool
-
 import os, json
 from cassandra.cluster import Cluster
 from cassandra.cqlengine import connection
@@ -116,9 +113,10 @@ def show_all_markers():
                                 'trend_classification' : trend_classification}),
                     mimetype='application/json')
 
+
 @app.route('/trend_graph', methods=['GET'])
 def get_trend_graph():
-    trend_doc = get_tweets_per_trend(n_trends=100)
+    trend_doc = get_tweets_per_trend(n_trends=50)
 
     result = vectorize_docs(trend_doc)
 
@@ -126,11 +124,6 @@ def get_trend_graph():
 
     return Response(json.dumps(graph),
                     mimetype='application/json')
-
-@app.route('/color', methods=['POST'])
-def show_color():
-    color = request.form['color']
-    return "Success"
 
 
 if __name__ == '__main__':
