@@ -4,7 +4,6 @@
 import os
 from pyspark import SparkContext,SparkConf
 import string
-import pandas as pd
 from pyspark.ml import Pipeline,PipelineModel
 import random
 import re
@@ -21,15 +20,18 @@ from pyspark.ml.feature import HashingTF, IDF
 # os.environ['PYSPARK_PYTHON'] = '/Library/Frameworks/Python.framework/Versions/3.6/bin/python3.6'
 # os.environ["PYSPARK_DRIVER_PYTHON"]='/Library/Frameworks/Python.framework/Versions/3.6/bin/python3.6'
 
+SPARK_MASTER = os.environ.get('SPARK_MASTER_URL','local[2]')
+CASSANDRA_HOST = os.environ.get('CASSANDRA_HOST','localhost')
+
 spark = SparkSession.builder \
   .appName('SparkCassandraApp') \
-  .config('spark.cassandra.connection.host', 'localhost') \
+  .config('spark.cassandra.connection.host', CASSANDRA_HOST) \
   .config('spark.cassandra.connection.port', '9042') \
   .config('spark.cassandra.output.consistency.level','ONE') \
   .config('spark.cassandra.output.consistency.level','ONE') \
-  .master('local[2]') \
+  .master(SPARK_MASTER) \
   .getOrCreate()
-
+  
 
 sqlContext = SQLContext(spark)
 
@@ -43,12 +45,12 @@ data = (
     .load()
 )
 
-data.show(10)
-print(data.count())
+# data.show(10)
+# print(data.count())
 # twid_for_none_tweets=data.where(col("topic").isNull()).select(col('twid'))
 data_filtered = data.where(col("topic").isNull()).select('trend','creation_time','twid','body')
-data_filtered.show(5)
-print(data_filtered.count())
+# data_filtered.show(5)
+# print(data_filtered.count())
 
 # Extract actual necessary words from the reddit
 def extract_words(text_words):
@@ -79,21 +81,23 @@ def extract_words(text_words):
 
 extract_words_udf=udf(extract_words,StringType())
 data_filtered=data_filtered.withColumn('text_words', extract_words_udf('body'))
-data_filtered.show()
+# data_filtered.show()
 
 regexTokenizer = RegexTokenizer(inputCol="text_words", outputCol="words", pattern="\\W")
 
 ## stop words
-f=open("/Users/saumya/Desktop/Big_data_project/stopwords_twitter.txt","r")
+f=open("./stopwords_twitter.txt","r")
+model = NaiveBayesModel.load('./NB_model_without_pipeline')
+
 add_stopwords =[]
 for l in f.readlines():
     add_stopwords.append(l.strip())
-print(add_stopwords[:5])
+# print(add_stopwords[:5])
 
 stopwordsRemover = StopWordsRemover(inputCol="words", outputCol="filtered").setStopWords(add_stopwords)
 
 ## bag of words count
-countVectors = CountVectorizer(inputCol="filtered", outputCol="features", binary=True, vocabSize=12000, minDF=1)
+countVectors = CountVectorizer(inputCol="filtered", outputCol="features", binary=True, vocabSize=10000, minDF=1)
 
 
 # label_stringIdx = StringIndexer(inputCol = "text_label", outputCol = "label")
@@ -110,32 +114,30 @@ pipeline = Pipeline(stages=[regexTokenizer, stopwordsRemover, countVectors])
 df = data_filtered.select('trend','creation_time',"twid","text_words")
 pipelineFit = pipeline.fit(df)
 dataset = pipelineFit.transform(df)
-dataset.show(5)
-dataset.count()
-
-model = NaiveBayesModel.load('/Users/saumya/Desktop/Big_data_project/NB_model_without_pipeline')
-print(model)
+# dataset.show(5)
+# dataset.count()
 
 predictions = model.transform(dataset)
 
-labeler = IndexToString(inputCol="prediction", outputCol="predictedLabel",labels=['event','sports','politics','news','technology','business','entertainment','health'])
+labeler = IndexToString(inputCol="prediction", outputCol="topic",labels=['event','sports','politics','news','technology','business','entertainment','health'])
 # print(predictions)
 prediciton_with_label=labeler.transform(predictions)
-prediciton_with_label.show(5)
-print(prediciton_with_label.count())
+# prediciton_with_label.show(5)
+# print(prediciton_with_label.count())
 
-ta = data.alias('ta')
-tb = prediciton_with_label.select('trend','creation_time','twid','predictedLabel').alias('tb')
+# ta = data.alias('ta')
+# tb = prediciton_with_label.select('trend','creation_time','twid','topic').alias('tb')
+prediciton_with_label.write.mode('append').format('org.apache.spark.sql.cassandra').options(table = 'tweet', keyspace = 'graphy').save()
 
-final_df=ta.join(tb,(ta.twid==tb.twid) & (ta.creation_time==tb.creation_time) & (ta.trend==tb.trend),how="left").select(ta.trend,ta.creation_time,ta.twid,ta.body,ta.location,ta.topic,ta.user,tb.predictedLabel)
-final_df.show()
-print(final_df.count())
-# final_df=final_df.drop('twid')
+# final_df=ta.join(tb,(ta.twid==tb.twid) & (ta.creation_time==tb.creation_time) & (ta.trend==tb.trend),how="left").select(ta.trend,ta.creation_time,ta.twid,ta.body,ta.location,ta.topic,ta.user,tb.predictedLabel)
+# final_df.show()
+# print(final_df.count())
+# # final_df=final_df.drop('twid')
 
-final_df=final_df.withColumn('topic',coalesce(final_df.topic,final_df.predictedLabel))
+# final_df=final_df.withColumn('topic',coalesce(final_df.topic,final_df.predictedLabel))
 
-final_df=final_df.drop('predictedLabel')
-print(final_df.count())
-final_df.show(5)
-# final_df.limit(100).write.csv('/Users/saumya/Desktop/Big_data_project/topic_classification.csv')
-final_df.write.mode('append').format('org.apache.spark.sql.cassandra').options(table = 'tweet', keyspace = 'graphy').save()
+# final_df=final_df.drop('predictedLabel')
+# print(final_df.count())
+# final_df.show(5)
+# # final_df.limit(100).write.csv('/Users/saumya/Desktop/Big_data_project/topic_classification.csv')
+# final_df.write.mode('append').format('org.apache.spark.sql.cassandra').options(table = 'tweet', keyspace = 'graphy').save()
