@@ -2,5 +2,4 @@ Mood
 Sports
 Politics
 Technology
-Business
 Entertainment
