@@ -1,8 +1,6 @@
-
-Event
+Mood
 Sports
 Politics
-News
 Technology
 Business
 Entertainment
