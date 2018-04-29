@@ -34,7 +34,7 @@ def annotate_tweets(manual_classifier, class_map):
                     continue
                 if row[2] in manual_classifier:
                     new_row = [row[0],
-                               class_map[manual_classifier[row[2]]], row[2]]
+                               manual_classifier[row[2]], row[2]]
                     output_writer.writerow(new_row.copy())
 
 
