@@ -4,6 +4,7 @@ import string
 import pandas as pd
 from glob import glob
 import json
+import csv
 
 import numpy as np
 from sklearn.pipeline import Pipeline
@@ -18,6 +19,8 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 import pickle
 from sklearn.externals import joblib
 from sklearn.feature_extraction.text import TfidfTransformer
+# from sklearn.linear_model import Perceptron,LogisticRegression
+from sklearn.svm import LinearSVC
 
 ## Extract actual necessary words from the tweet/reddit post (little pre-processing done here)
 def extract_words(text_words):
@@ -26,7 +29,7 @@ def extract_words(text_words):
     alpha_lower = string.ascii_lowercase
     alpha_upper = string.ascii_uppercase
     numbers = [str(n) for n in range(10)]
-    text=" ".join(text_words)
+    text=text_words
     p = re.sub(r'[^\w\s]', '', text)
     p = re.sub(" \d+", " ", p)
     # p=[i.lower() for i in p.split()]
@@ -48,44 +51,18 @@ def extract_words(text_words):
 
 ## creating training data, using reddit and twitter data
 def get_training_data():
-    f_red= open('train_data_from_reddit.txt', 'r', encoding='utf-8')
-
     training_data = []
-    f_s_p = open('twitter-topic-classifier-master//training.txt', 'r', encoding='utf-8')
+    with open('/Users/saumya/Desktop/Big_data_project/labeled_markers.csv', encoding='utf-8') as input_file:
+        reader = csv.reader(input_file)
+        header = next(reader)
+        for row in reader:
+            tweet_words = extract_words(row[0])
+            tweet_label = row[1].lower()
+            # print(tweet_details[2:])
 
-    for l in f_s_p.readlines():
-        l = l.strip()
-        tweet_details = l.split()
-        tweet_id = tweet_details[0]
-        tweet_label = tweet_details[1].lower()
-        # print(tweet_details[2:])
-        tweet_words = extract_words(tweet_details[2:])
-        training_data.append([tweet_label, tweet_words])
-
-    f_s_p.close()
-
-    for f_name in glob('tweets_news_events/*.json'):
-        # print(f_name)
-        with open(f_name) as json_data:
-            d = json.load(json_data)
-            l = f_name.split('/')[1]
-            tweet_id = l.split('_')[1].split('.')[0]
-            tweet_label = l.split('_')[0].lower()
-            # print(d['text'].strip())
-            tweet_words = extract_words(d['text'].strip().split())
-            # print(tweet_words)
             training_data.append([tweet_label, tweet_words])
 
 
-    for l in f_red.readlines():
-        l = l.strip()
-        reddit_details = l.split()
-        reddit_label = reddit_details[0].lower()
-        reddit_words = extract_words(reddit_details[1:])
-        if reddit_label!='health':
-            training_data.append([reddit_label, reddit_words])
-
-    f_red.close()
     random.shuffle(training_data)
     return training_data
 
@@ -136,8 +113,9 @@ classifier.fit(X, Y)
 # print(accuracy_score(y_test, predicted))
 # print(precision_score(y_test, predicted, average="macro"))
 # print(recall_score(y_test, predicted, average="macro"))
-
-joblib.dump(classifier, 'topic_classifier_sklearn.pkl')
+#
+# print(all_labels[:10])
+joblib.dump(classifier, 'topic_classifier_sklearn_updated.pkl')
 
 
 
