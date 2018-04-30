@@ -77,10 +77,10 @@ def predict_sentiment(words):
 if __name__ == '__main__':
     consumer = KafkaConsumer(IN_TREND_TOPIC, group_id='tweet_clasifier', bootstrap_servers=KAFKA_SERVERS, value_deserializer=lambda x: x.decode("utf-8"))
     with open('current_topic_categories.txt', 'r') as f:
-        topics  = f.read().split()
+        topics  = sorted(f.read().split())
         logging.info('Topic categories loaded: %s' % topics)
     with open('current_sentiment_categories.txt', 'r') as f:
-        sentiments  = f.read().split()
+        sentiments  = sorted(f.read().split())
         logging.info('Sentiment categories loaded: %s' % sentiments)
     for msg in consumer:
         if msg and msg.value:
