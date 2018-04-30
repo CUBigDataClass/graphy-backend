@@ -24,9 +24,7 @@ CASSANDRA_IPS = list(
 # This function returns a base geo json dictionary
 def make_base_geojson():
     base_dict = {'features': [],
-                 'properties': {'attribution': 'Traffic accidents: <a '
-                                               'href="http://data.norge.no/data/nasjonal-vegdatabank-api" '
-                                               'target="blank">NVDB</a>',
+                 'properties': {'attribution': '',
                                 'description': 'Tweet and trend analysis',
 
                                 'fields': {'5055': {'name': 'Date'},
@@ -34,15 +32,16 @@ def make_base_geojson():
                                            '5057': {'name': 'Trend'},
                                            '5058': {'name': 'TweetID'},
                                            '5059': {'name': 'User'},
-                                           '5065': {'Sentiment': {'1': 'Pedestrian',
-                                                               '2': 'Bicycle',
-                                                               '3': 'Motorcycle',
-                                                               '4': 'Car'},
-                                                    'name': 'Sentiment'},
-                                           '5074': {'lookup': {1: 'Anger',
+                                           '5065': {'lookup': {1: 'Anger',
                                                                2: 'Joy',
                                                                3: 'Neutral',
                                                                4: 'Sadness'},
+                                                    'name': 'Sentiment'},
+                                           '5074': {'lookup': {1: 'Entertainment',
+                                                               2: 'Mood',
+                                                               3: 'Politics',
+                                                               4: 'Sports',
+                                                               5: 'Technology'},
                                                     'name': 'Topic'}}},
                  'type': 'FeatureCollection'}
     return base_dict
