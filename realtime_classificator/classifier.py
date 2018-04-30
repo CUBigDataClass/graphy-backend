@@ -18,7 +18,8 @@ logging.basicConfig(
 KAFKA_SERVERS = os.environ.get('KAFKA_SERVERS', 'localhost')
 IN_TREND_TOPIC = os.environ.get('IN_TREND_TOPIC', 'tweets')
 
-CLASSIFIER = joblib.load('topic_classifier_sklearn.pkl')
+TOPIC_C = joblib.load('topic_classifier_sklearn_updated.pkl')
+SENTIMENT_C = joblib.load('sentiment_classifier_sklearn.pkl')
 
 
 CASSANDRA_IPS = list(map(socket.gethostbyname, os.environ.get('CASSANDRA_NODES', '127.0.0.1').replace(' ', '').split(',')))
@@ -67,16 +68,20 @@ def extract_words(text_words):
 def prepare(body):
     return extract_words(body.strip().split())
 
-def predict(text):
-    inp =  prepare(text)
-    return CLASSIFIER.predict([inp,])
+def predict_topic(words):
+    return TOPIC_C.predict([words,])
   
+def predict_sentiment(words):
+    return SENTIMENT_C.predict([words,])
 
 if __name__ == '__main__':
     consumer = KafkaConsumer(IN_TREND_TOPIC, group_id='tweet_clasifier', bootstrap_servers=KAFKA_SERVERS, value_deserializer=lambda x: x.decode("utf-8"))
     with open('current_topic_categories.txt', 'r') as f:
-        categories  = f.read().split()
-        logging.info('Topic categories loaded: %s' % categories)
+        topics  = sorted(f.read().split())
+        logging.info('Topic categories loaded: %s' % topics)
+    with open('current_sentiment_categories.txt', 'r') as f:
+        sentiments  = sorted(f.read().split())
+        logging.info('Sentiment categories loaded: %s' % sentiments)
     for msg in consumer:
         if msg and msg.value:
             try:
@@ -86,11 +91,14 @@ if __name__ == '__main__':
                 logging.error(e)
                 continue
             body =  tweet.get('body', None)
+            words =  prepare(body)
             if not body:
                 logging.warn('No body for tweet. Skipping: %s' % msg.value)
                 continue
-            topic =  categories[predict(body)[0]]
-            logging.info('Tweet received from Kafka. Topic %s' % topic)
+            topic =  topics[predict_topic(words)[0]]
+            sentiment =  sentiments[predict_sentiment(words)[0]]
+            logging.info('Tweet received from Kafka. Topic: %s. Sentiment: %s' % (topic,sentiment))
             tweet['topic'] = topic
+            tweet['sentiment'] = sentiment
             _store_dict(tweet)
             
