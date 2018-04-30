@@ -4,7 +4,7 @@ push: push-server
 .PHONY: push build
 
 
-TAG = 1.0.4
+TAG = 1.0.8
 PROJECT_NAME = tweets_api
 
 build-server:

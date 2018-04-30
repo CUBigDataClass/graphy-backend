@@ -127,6 +127,12 @@ def show_all_markers():
                                 'trend_sentiment' : trend_sentiment}),
                     mimetype='application/json')
 
+@app.route('/tweets.json', methods=['GET'])
+def get_tweets():
+    cluster = Cluster(CASSANDRA_IPS)
+    session = cluster.connect('graphy')
+    rows = session.execute("SELECT json * FROM tweet limit 100000")
+    return Response('{"tweets":['+ ','.join(map(lambda x:x.json, rows))+"]}",mimetype='application/json')
 
 @app.route('/trend_graph', methods=['GET'])
 def get_trend_graph():
