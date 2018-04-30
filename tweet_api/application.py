@@ -32,10 +32,10 @@ def make_base_geojson():
                                            '5057': {'name': 'Trend'},
                                            '5058': {'name': 'TweetID'},
                                            '5059': {'name': 'User'},
-                                           '5065': {'lookup': {1: 'Anger',
-                                                               2: 'Joy',
-                                                               3: 'Neutral',
-                                                               4: 'Sadness'},
+                                           '5065': {'lookup': {1: '🤬', # Anger
+                                                               2: '😁', # Joy
+                                                               3: '😐', #Neutral
+                                                               4: '☹️'}, #Sadness
                                                     'name': 'Sentiment'},
                                            '5074': {'lookup': {1: 'Entertainment',
                                                                2: 'Mood',
