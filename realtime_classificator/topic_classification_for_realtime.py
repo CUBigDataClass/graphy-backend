@@ -20,9 +20,9 @@ import pickle
 from sklearn.externals import joblib
 from sklearn.feature_extraction.text import TfidfTransformer
 # from sklearn.linear_model import Perceptron,LogisticRegression
-from sklearn.svm import LinearSVC
+# from sklearn.svm import LinearSVC
 
-## Extract actual necessary words from the tweet/reddit post (little pre-processing done here)
+## Extract actual necessary words from the tweet (little pre-processing done here)
 def extract_words(text_words):
     words = []
     # print(text_words)
@@ -49,7 +49,7 @@ def extract_words(text_words):
     url_less_words = re.sub(r'(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:\'".,<>?«»“”‘’]))','', words_with_url)
     return url_less_words
 
-## creating training data, using reddit and twitter data
+## creating training data, using trend labelled data (with 5 categories)
 def get_training_data():
     training_data = []
     with open('/Users/saumya/Desktop/Big_data_project/labeled_markers.csv', encoding='utf-8') as input_file:
