@@ -4,7 +4,7 @@ push: push-server
 .PHONY: push build
 
 
-TAG = 1.0.1
+TAG = 1.0.2
 PROJECT_NAME = realtime_classifier
 
 build-server:
