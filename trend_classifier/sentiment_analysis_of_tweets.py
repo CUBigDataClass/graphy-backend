@@ -20,7 +20,7 @@ from pyspark.mllib.regression import LabeledPoint
 from pyspark.mllib.evaluation import MulticlassMetrics
 
 
-## Extract actual necessary words from the tweet/reddit post (little pre-processing done here)
+## Extract actual necessary words from the tweets (little pre-processing done here)
 def extract_words(text_words):
     words = []
     # print(text_words)
@@ -47,7 +47,7 @@ def extract_words(text_words):
     url_less_words = re.sub(r'(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:\'".,<>?«»“”‘’]))','', words_with_url)
     return url_less_words
 
-## creating training data, using reddit and twitter data
+## creating training data, using twitter data lablled for 4 emotions ('anger','joy','neutral','sadness')
 def get_training_data():
     f= open('/Users/saumya/Desktop/Big_data_project/tweet_emotion_labelled_data.txt', 'r', encoding='utf-8')
 
@@ -61,6 +61,8 @@ def get_training_data():
         tweet_words = extract_words(tweet_details[1])
         # print(tweet_details[2:])
         emotion_label=tweet_details[2]
+        if emotion_label=='fear':
+            emotion_label='neutral'
         emotion_score=tweet_details[3]
         training_data.append([emotion_label,tweet_words])
 
@@ -72,6 +74,7 @@ def get_training_data():
 
 train_data=get_training_data()
 
+## creating a spark context
 sc =SparkContext()
 sqlContext = SQLContext(sc)
 
@@ -80,7 +83,7 @@ df.columns = ['text_label','text_words', ]
 data=sqlContext.createDataFrame(df)
 data.show(5)
 
-## Counting no. of tweet/reddit post corresponding to each topic
+## Counting no. of tweets corresponding to each sentiment
 data.groupBy("text_label") \
     .count() \
     .orderBy(col("count").desc()) \
@@ -101,18 +104,10 @@ stopwordsRemover = StopWordsRemover(inputCol="words", outputCol="filtered").setS
 ## bag of words count
 countVectors = CountVectorizer(inputCol="filtered", outputCol="features", binary=True, vocabSize=10000, minDF=1)
 
-# hashingTF = HashingTF(inputCol="filtered", outputCol="rawFeatures", numFeatures=10000)
-# idf = IDF(inputCol="rawFeatures", outputCol="features", minDocFreq=5) #minDocFreq: remove sparse terms
-
 ## creating the pipeline
 label_stringIdx = StringIndexer(inputCol = "text_label", outputCol = "label")
 pipeline = Pipeline(stages=[regexTokenizer, stopwordsRemover,countVectors, label_stringIdx])
 
-## creating the Naive Bayes classification model
-# lr =  NaiveBayes(smoothing=1.0, modelType = "multinomial")
-
-## creating the pipeline
-# pipeline = Pipeline(stages=[regexTokenizer, stopwordsRemover,countVectors, label_stringIdx]+[lr])
 
 # Fit the pipeline to training documents.
 pipelineFit = pipeline.fit(data)
@@ -141,5 +136,5 @@ lrModel=lr.fit(trainingData)
 # print(evaluator.evaluate(predictions))
 
 
-
+# saving the model
 lrModel.write().overwrite().save("Sentiment_model")
